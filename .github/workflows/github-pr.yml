@@ -8,61 +8,18 @@ on:
 jobs:
   build_test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [ 14.x ]
 
     steps:
 
-      - uses: actions/checkout@v2
+      - name: checkout repo
+        uses: actions/checkout@v2
 
-      - name: setup node
-        uses: actions/setup-node@master
+      - name: setup go
+        uses: actions/setup-go@v2
         with:
-          node-version: ${{ matrix.node-version }}
+          go-version: '1.17'
 
-      - name: Install dependencies
+      - name: Install dependencies and test
         run: |
-          yarn
-
-  push_dockerhub:
-    runs-on: ubuntu-latest
-    environment: master
-
-    steps:
-      - name: checkout repo
-        uses: actions/checkout@v2
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build and push
-        uses: docker/build-push-action@v2
-        with:
-          context: ./
-          file: ./Dockerfile
-          push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/nodejs-actions:stage
-
-  deploy_tencent:
-    runs-on: ubuntu-latest
-    needs: [push_dockerhub]
-    environment: master
-
-    steps:
-      - name: checkout repo
-        uses: actions/checkout@v2
-
-      - name: Deploy to Cluster
-        uses: wahyd4/kubectl-helm-action@master
-        env:
-          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
-        with:
-          args: |
-            helm upgrade --install stg-sample deployment/sample --set image.tag=stage --set ingress.prefix=stg
+          go mod download
+          go test ./...
