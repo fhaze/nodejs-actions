@@ -1,11 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"github.com/labstack/echo-contrib/prometheus"
 	"github.com/labstack/echo/v4"
 	"net/http"
-	"nodejs-actions/message"
 )
+
+var counter = 0
 
 func main() {
 	e := echo.New()
@@ -14,7 +16,8 @@ func main() {
 	p.Use(e)
 
 	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, message.HelloPerson("1.0.3"))
+		counter++
+		return c.String(http.StatusOK, fmt.Sprintf("Hello! Counter: %d", counter))
 	})
 	e.Logger.Fatal(e.Start(":3000"))
 }
