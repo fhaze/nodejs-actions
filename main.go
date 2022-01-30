@@ -17,7 +17,7 @@ func main() {
 
 	e.GET("/", func(c echo.Context) error {
 		counter++
-		return c.String(http.StatusOK, fmt.Sprintf("Hello! Counter: %d", counter))
+		return c.String(http.StatusOK, fmt.Sprintf("Hello! Counter v2.0: %d", counter))
 	})
 	e.Logger.Fatal(e.Start(":3000"))
 }
