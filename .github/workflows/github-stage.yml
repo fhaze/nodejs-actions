@@ -74,14 +74,6 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/nodejs-actions:${{ steps.commit_hash.outputs.sha_short }}
 
-      - name: Deploy to Cluster
-        uses: wahyd4/kubectl-helm-action@master
-        env:
-          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
-        with:
-          args: |
-            helm upgrade --install sample deployment/sample --set image.tag=${{ steps.commit_hash.outputs.sha_short }}
-
   deploy_tencent:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
@@ -106,4 +98,4 @@ jobs:
           KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
         with:
           args: |
-            helm upgrade --install sample deployment/sample --set image.tag=${{ steps.commit_hash.outputs.sha_short }} --set ingress.prefix=stg
+            helm upgrade --install stg-sample deployment/sample --set image.tag=${{ steps.commit_hash.outputs.sha_short }} --set ingress.prefix=stg
