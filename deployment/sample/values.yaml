@@ -41,6 +41,7 @@ service:
   port: 3000
 
 ingress:
+  prefix: ""
   enabled: true
   className: ""
   annotations:
