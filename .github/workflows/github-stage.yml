@@ -36,7 +36,7 @@ jobs:
     steps:
       - name: Set output
         id: vars
-        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/tags/}
 
       - name: checkout repo
         uses: actions/checkout@v2
@@ -68,7 +68,7 @@ jobs:
     steps:
       - name: Set output
         id: vars
-        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/tags/}
 
       - name: checkout repo
         uses: actions/checkout@v2
