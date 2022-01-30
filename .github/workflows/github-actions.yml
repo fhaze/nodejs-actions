@@ -40,7 +40,7 @@ jobs:
 #        run: |
 #          npm run build
 #          npm run test
-  push_to_Docker_Hub:
+  push_dockerhub:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     # build docker image and push to docker hub
@@ -76,6 +76,32 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/nodejs-actions:${{ steps.commit_hash.outputs.sha_short }}
+
+      - name: Deploy to Cluster
+        uses: wahyd4/kubectl-helm-action@master
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+        with:
+          args: |
+            helm upgrade --install sample deployment/sample --set image.tag=${{ steps.commit_hash.outputs.sha_short }}
+
+  deploy_tencent:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    # build docker image and push to docker hub
+    # only if the app build and test successfully
+    needs: [build_test]
+    environment: master
+
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v2
+
+      - name: Get short commit hash
+        id: commit_hash
+        run: |
+          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+          echo "SHA_SHORT=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
       - name: Deploy to Cluster
         uses: wahyd4/kubectl-helm-action@master
