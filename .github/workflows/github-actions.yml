@@ -70,4 +70,4 @@ jobs:
           context: ./
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/nodejs-actions:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/nodejs-actions:${GITHUB_SHA::8}
