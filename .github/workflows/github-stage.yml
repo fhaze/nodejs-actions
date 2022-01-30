@@ -10,7 +10,6 @@ on:
 jobs:
   push_dockerhub:
     runs-on: ubuntu-latest
-    needs: [build_test]
     environment: master
 
     steps:
