@@ -90,7 +90,7 @@ jobs:
     runs-on: ubuntu-latest
     # build docker image and push to docker hub
     # only if the app build and test successfully
-    needs: [deploy_tencent]
+    needs: [push_dockerhub]
     environment: master
 
     steps:
