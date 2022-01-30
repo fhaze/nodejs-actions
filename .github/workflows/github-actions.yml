@@ -75,4 +75,4 @@ jobs:
           context: ./
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/nodejs-actions:$IMAGE_TAG
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/nodejs-actions:${{ steps.commit_hash.outputs.sha_short }}
