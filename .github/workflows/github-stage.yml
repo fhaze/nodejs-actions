@@ -1,47 +1,15 @@
-# This is a basic workflow to help you get started with Actions
-name: CI-CD
+name: Deploy Stage
 
-# Controls when the action will run.
 on:
-  pull_request:
-    branches: [ master ]
-  # Allows you to run this workflow manually from the Actions tab
+  push:
+    branches: [ stage ]
+    tags:
+      - 'v*.*.*'
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains multiple jobs
-  build_test:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [14.x]
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-
-      - name: setup node
-        uses: actions/setup-node@master
-        with:
-          node-version: ${{ matrix.node-version }}
-
-      # install applicaion dependencies
-      - name: Install dependencies
-        run: |
-          yarn
-      # build and test the apps
-#      - name: build
-#        run: |
-#          npm run build
-#          npm run test
   push_dockerhub:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
-    # build docker image and push to docker hub
-    # only if the app build and test successfully
     needs: [build_test]
     environment: master
 
@@ -49,11 +17,9 @@ jobs:
       - name: checkout repo
         uses: actions/checkout@v2
 
-      - name: Get short commit hash
-        id: commit_hash
-        run: |
-          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
-          echo "SHA_SHORT=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+      - name: Set output
+        id: vars
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
@@ -72,13 +38,10 @@ jobs:
           context: ./
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/nodejs-actions:${{ steps.commit_hash.outputs.sha_short }}
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/nodejs-actions:${{ steps.vars.outputs.tag }}
 
   deploy_tencent:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
-    # build docker image and push to docker hub
-    # only if the app build and test successfully
     needs: [push_dockerhub]
     environment: master
 
@@ -86,11 +49,9 @@ jobs:
       - name: checkout repo
         uses: actions/checkout@v2
 
-      - name: Get short commit hash
-        id: commit_hash
-        run: |
-          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
-          echo "SHA_SHORT=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+      - name: Set output
+        id: vars
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
 
       - name: Deploy to Cluster
         uses: wahyd4/kubectl-helm-action@master
@@ -98,4 +59,4 @@ jobs:
           KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
         with:
           args: |
-            helm upgrade --install stg-sample deployment/sample --set image.tag=${{ steps.commit_hash.outputs.sha_short }} --set ingress.prefix=stg
+            helm upgrade --install stg-sample deployment/sample --set image.tag=${{ steps.vars.outputs.tag }} --set ingress.prefix=stg
